@@ -58,13 +58,11 @@ def read_examples_from_file(data_dir, mode):
     box_file_path = os.path.join(data_dir, "{}_box.txt".format(mode))
     guid_index = 1
     examples = []
-    with open(file_path, encoding="utf-8") as f, open(
-        box_file_path, encoding="utf-8"
-    ) as fb:
+    with open(file_path, encoding="utf-8") as f:
         words = []
         labels = []
         boxes = []
-        for line, bline in zip(f, fb):
+        for line in f:
             if line.startswith("-DOCSTART-") or line == "" or line == "\n":
                 if words:
                     examples.append(
@@ -80,16 +78,14 @@ def read_examples_from_file(data_dir, mode):
                     boxes = []
                     labels = []
             else:
-                splits = line.split("\t")
-                bsplits = bline.split("\t")
-                assert len(splits) == 2
-                assert len(bsplits) == 2
-                assert splits[0] == bsplits[0]
+                splits = line.split("\t\t")
+                assert len(splits) == 3
+
                 words.append(splits[0])
+                labels.append(splits[1])
                 if len(splits) > 1:
-                    labels.append(splits[-1].replace("\n", ""))
-                    box = bsplits[-1].replace("\n", "")
-                    box = [int(b) for b in box.split()]
+                    boxs = splits[-1].replace("\n", "")
+                    box = [int(b) for b in boxs.split(",")]
                     boxes.append(box)
                 else:
                     # Examples could have no label for mode = "test"
@@ -107,24 +103,24 @@ def read_examples_from_file(data_dir, mode):
 
 
 def convert_examples_to_features(
-    examples,
-    label_list,
-    max_seq_length,
-    tokenizer,
-    cls_token_at_end=False,
-    cls_token="[CLS]",
-    cls_token_segment_id=1,
-    sep_token="[SEP]",
-    sep_token_extra=False,
-    pad_on_left=False,
-    pad_token=0,
-    cls_token_box=[0, 0, 0, 0],
-    sep_token_box=[1000, 1000, 1000, 1000],
-    pad_token_box=[0, 0, 0, 0],
-    pad_token_segment_id=0,
-    pad_token_label_id=-1,
-    sequence_a_segment_id=0,
-    mask_padding_with_zero=True,
+        examples,
+        label_list,
+        max_seq_length,
+        tokenizer,
+        cls_token_at_end=False,
+        cls_token="[CLS]",
+        cls_token_segment_id=1,
+        sep_token="[SEP]",
+        sep_token_extra=False,
+        pad_on_left=False,
+        pad_token=0,
+        cls_token_box=[0, 0, 0, 0],
+        sep_token_box=[792, 612, 792, 612],
+        pad_token_box=[0, 0, 0, 0],
+        pad_token_segment_id=0,
+        pad_token_label_id=-1,
+        sequence_a_segment_id=0,
+        mask_padding_with_zero=True,
 ):
     """ Loads a data file into a list of `InputBatch`s
         `cls_token_at_end` define the location of the CLS token:
@@ -209,8 +205,8 @@ def convert_examples_to_features(
         if pad_on_left:
             input_ids = ([pad_token] * padding_length) + input_ids
             input_mask = (
-                [0 if mask_padding_with_zero else 1] * padding_length
-            ) + input_mask
+                                 [0 if mask_padding_with_zero else 1] * padding_length
+                         ) + input_mask
             segment_ids = ([pad_token_segment_id] * padding_length) + segment_ids
             label_ids = ([pad_token_label_id] * padding_length) + label_ids
             token_boxes = ([pad_token_box] * padding_length) + token_boxes
@@ -268,4 +264,3 @@ def get_labels(path):
             "B-LOC",
             "I-LOC",
         ]
-

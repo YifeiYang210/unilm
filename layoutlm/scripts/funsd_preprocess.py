@@ -2,7 +2,7 @@ import os
 import json
 import argparse
 from PIL import Image
-from transformers import BertTokenizer, RobertaTokenizer, DistilBertTokenizer
+from transformers import BertTokenizer, RobertaTokenizer, DistilBertTokenizer, BertConfig
 
 
 def bbox_string(box, width, length):
@@ -88,8 +88,8 @@ def convert(args):
 def seg_file(file_path, tokenizer, max_len):
     subword_len_counter = 0
     output_path = file_path[:-4]
-    with open(file_path, "r", encoding="utf8") as f_p, open(
-        output_path, "w", encoding="utf8"
+    with open(file_path, "r", encoding="iso8859-1") as f_p, open(
+        output_path, "w", encoding="iso8859-1"
     ) as fw_p:
         for line in f_p:
             line = line.rstrip()
@@ -138,12 +138,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--data_dir", type=str, default="data/training_data/annotations"
     )
-    parser.add_argument("--data_split", type=str, default="train")
+    parser.add_argument("--data_split", type=str, default="test")
     parser.add_argument("--output_dir", type=str, default="data")
     parser.add_argument("--model_name_or_path", type=str, default="bert-base-uncased")
     parser.add_argument("--max_len", type=int, default=510)
     args = parser.parse_args()
 
-    convert(args)
+    # convert(args)
     seg(args)
 

@@ -157,3 +157,12 @@ For help or issues using LayoutLM, please submit a GitHub issue.
 
 For other communications related to LayoutLM, please contact Lei Cui (`lecu@microsoft.com`), Furu Wei (`fuwei@microsoft.com`).
 
+### My test
+
+Using LayoutLM-Base, Uncased pretrained model in contract dataset.
+
+Because of privacy term, only display the result.
+
+English contract NER task (200 samples): F1=99.82%
+
+English and part of Chinese (600 samples): F1=96.57%

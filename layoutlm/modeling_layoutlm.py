@@ -11,6 +11,8 @@ from transformers.modeling_bert import (
 
 class LayoutLMEmbeddings(nn.Module):
     """Construct the embeddings from word, position and token_type embeddings.
+    adds the related position of each words in the bbox Embeddings
+    adds the total number of words in the bbox Embeddings
     """
 
     def __init__(self, config):
@@ -21,6 +23,17 @@ class LayoutLMEmbeddings(nn.Module):
         self.position_embeddings = nn.Embedding(
             config.max_position_embeddings, config.hidden_size
         )
+
+        # # the related position of each words in the bbox
+        # self.position_relation_embeddings = nn.Embedding(
+        #     config.max_position_embeddings, config.hidden_size
+        # )
+        # # the total number of words in the bbox
+        # self.box_number_embeddings = nn.Embedding(
+        #     config.max_position_embeddings,
+        #     config.hidden_size
+        # )
+
         self.x_position_embeddings = nn.Embedding(
             config.max_2d_position_embeddings, config.hidden_size
         )
@@ -71,6 +84,8 @@ class LayoutLMEmbeddings(nn.Module):
         embeddings = (
             words_embeddings
             + position_embeddings
+            # + position_relation_embeddings # 文字在文本框中的相对位置
+            # + box_number_embeddings # 文本框中文字的数目
             + left_position_embeddings
             + upper_position_embeddings
             + right_position_embeddings
@@ -251,16 +266,16 @@ class LayoutLMForTokenClassification(BertPreTrainedModel):
             token_type_ids=token_type_ids,
             position_ids=position_ids,
             head_mask=head_mask,
-        )
+        )  # outputs:(last_hidden_state, pooler_output)
 
-        sequence_output = outputs[0]
+        sequence_output = outputs[0]  # last_hidden_state: (batch_size, sequence_length, hidden_size)
 
         sequence_output = self.dropout(sequence_output)
         logits = self.classifier(sequence_output)
 
-        outputs = (logits,) + outputs[
-            2:
-        ]  # add hidden states and attention if they are here
+        outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
+        # outputs: (result)
+
         if labels is not None:
             loss_fct = CrossEntropyLoss()
             # Only keep active parts of the loss
@@ -273,7 +288,7 @@ class LayoutLMForTokenClassification(BertPreTrainedModel):
                 loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
             outputs = (loss,) + outputs
 
-        return outputs  # (loss), scores, (hidden_states), (attentions)
+        return outputs  # (loss), results, (hidden_states), (attentions)
 
 
 class LayoutLMForSequenceClassification(BertPreTrainedModel):

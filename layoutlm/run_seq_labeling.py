@@ -105,15 +105,15 @@ def train(args, train_dataset, model, tokenizer, labels, pad_token_label_id):
     if args.max_steps > 0:
         t_total = args.max_steps
         args.num_train_epochs = (
-            args.max_steps
-            // (len(train_dataloader) // args.gradient_accumulation_steps)
-            + 1
+                args.max_steps
+                // (len(train_dataloader) // args.gradient_accumulation_steps)
+                + 1
         )
     else:
         t_total = (
-            len(train_dataloader)
-            // args.gradient_accumulation_steps
-            * args.num_train_epochs
+                len(train_dataloader)
+                // args.gradient_accumulation_steps
+                * args.num_train_epochs
         )
 
     # Prepare optimizer and schedule (linear warmup and decay)
@@ -245,13 +245,13 @@ def train(args, train_dataset, model, tokenizer, labels, pad_token_label_id):
                 global_step += 1
 
                 if (
-                    args.local_rank in [-1, 0]
-                    and args.logging_steps > 0
-                    and global_step % args.logging_steps == 0
+                        args.local_rank in [-1, 0]
+                        and args.logging_steps > 0
+                        and global_step % args.logging_steps == 0
                 ):
                     # Log metrics
                     if (
-                        args.local_rank == -1 and args.evaluate_during_training
+                            args.local_rank == -1 and args.evaluate_during_training
                     ):  # Only evaluate when single GPU otherwise metrics may not average well
                         results, _ = evaluate(
                             args,
@@ -274,9 +274,9 @@ def train(args, train_dataset, model, tokenizer, labels, pad_token_label_id):
                     logging_loss = tr_loss
 
                 if (
-                    args.local_rank in [-1, 0]
-                    and args.save_steps > 0
-                    and global_step % args.save_steps == 0
+                        args.local_rank in [-1, 0]
+                        and args.save_steps > 0
+                        and global_step % args.save_steps == 0
                 ):
                     # Save model checkpoint
                     output_dir = os.path.join(
@@ -379,6 +379,21 @@ def evaluate(args, model, tokenizer, labels, pad_token_label_id, mode, prefix=""
                 out_label_list[i].append(label_map[out_label_ids[i][j]])
                 preds_list[i].append(label_map[preds[i][j]])
 
+    # with open("label1.txt","w",encoding="utf8") as fl,open(
+    #     "pred1.txt","w",encoding="utf8"
+    # ) as fp:
+    #     for i in range(len(out_label_list)):
+    #         s = str(out_label_list[i]).replace('[', '').replace(']', '')  # 去除[],这两行按数据不同，可以选择
+    #         s = s.replace("'", '').replace(',', '') + '\n'  # 去除单引号，逗号，每行末尾追加换行符
+    #         fl.write(s)
+    #
+    #     print("===========")
+    #
+    #     for i in range(len(preds_list)):
+    #         s = str(preds_list[i]).replace('[', '').replace(']', '')  # 去除[],这两行按数据不同，可以选择
+    #         s = s.replace("'", '').replace(',', '') + '\n'  # 去除单引号，逗号，每行末尾追加换行符
+    #         fp.write(s)
+
     results = {
         "loss": eval_loss,
         "precision": precision_score(out_label_list, preds_list),
@@ -477,7 +492,7 @@ def main():
         type=str,
         required=True,
         help="Path to pre-trained model or shortcut name selected in the list: "
-        + ", ".join(ALL_MODELS),
+             + ", ".join(ALL_MODELS),
     )
     parser.add_argument(
         "--output_dir",
@@ -517,7 +532,7 @@ def main():
         default=128,
         type=int,
         help="The maximum total input sequence length after tokenization. Sequences longer "
-        "than this will be truncated, sequences shorter will be padded.",
+             "than this will be truncated, sequences shorter will be padded.",
     )
     parser.add_argument(
         "--do_train", action="store_true", help="Whether to run training."
@@ -631,7 +646,7 @@ def main():
         type=str,
         default="O1",
         help="For fp16: Apex AMP optimization level selected in ['O0', 'O1', 'O2', and 'O3']."
-        "See details at https://nvidia.github.io/apex/amp.html",
+             "See details at https://nvidia.github.io/apex/amp.html",
     )
     parser.add_argument(
         "--local_rank",
@@ -648,10 +663,10 @@ def main():
     args = parser.parse_args()
 
     if (
-        os.path.exists(args.output_dir)
-        and os.listdir(args.output_dir)
-        and args.do_train
-        and not args.overwrite_output_dir
+            os.path.exists(args.output_dir)
+            and os.listdir(args.output_dir)
+            and args.do_train
+            and not args.overwrite_output_dir
     ):
         raise ValueError(
             "Output directory ({}) already exists and is not empty. Use --overwrite_output_dir to overcome.".format(
@@ -677,7 +692,7 @@ def main():
         )
         torch.cuda.set_device(device)
         args.n_gpu = torch.cuda.device_count()
-    else:  # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
+    else:  # Initializes the distributed backend which will take care of synchronizing nodes/GPUs
         torch.cuda.set_device(args.local_rank)
         device = torch.device("cuda", args.local_rank)
         torch.distributed.init_process_group(backend="nccl")
@@ -686,7 +701,7 @@ def main():
 
     if args.overwrite_output_dir and os.path.exists(args.output_dir):
         shutil.rmtree(args.output_dir)
-    os.makedirs(args.output_dir)
+    # os.makedirs(args.output_dir)
     # Setup logging
     logging.basicConfig(
         filename=os.path.join(args.output_dir, "train.log"),
@@ -827,8 +842,8 @@ def main():
         output_test_predictions_file = os.path.join(
             args.output_dir, "test_predictions.txt"
         )
-        with open(output_test_predictions_file, "w") as writer:
-            with open(os.path.join(args.data_dir, "test.txt"), "r") as f:
+        with open(output_test_predictions_file, "w", encoding="utf-8") as writer:
+            with open(os.path.join(args.data_dir, "test.txt"), "r", encoding="utf-8") as f:
                 example_id = 0
                 for line in f:
                     if line.startswith("-DOCSTART-") or line == "" or line == "\n":
@@ -837,10 +852,10 @@ def main():
                             example_id += 1
                     elif predictions[example_id]:
                         output_line = (
-                            line.split()[0]
-                            + " "
-                            + predictions[example_id].pop(0)
-                            + "\n"
+                                line.split()[0]
+                                + " "
+                                + predictions[example_id].pop(0)
+                                + "\n"
                         )
                         writer.write(output_line)
                     else:
